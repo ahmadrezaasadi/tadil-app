@@ -17,13 +17,13 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
       - name: Install System Dependencies
         run: |
           sudo apt update
           sudo apt install -y \
-            git zip unzip \
+            git zip unzip wget \
             openjdk-17-jdk \
             build-essential \
             libffi-dev \
@@ -33,6 +33,20 @@ jobs:
             libncurses-dev \
             zlib1g-dev \
             libjpeg-dev
+
+      # 🔥 نصب کامل Android SDK (مهم ترین بخش)
+      - name: Install Android SDK
+        run: |
+          mkdir -p $HOME/android-sdk
+          cd $HOME/android-sdk
+          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip commandlinetools-linux-11076708_latest.zip
+          mkdir cmdline-tools/latest
+          mv cmdline-tools/* cmdline-tools/latest/ || true
+          export ANDROID_HOME=$HOME/android-sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          yes | sdkmanager --licenses || true
+          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
@@ -44,12 +58,6 @@ jobs:
           pip install python-bidi==0.4.2
           pip install openpyxl
           pip install kivy
-
-      # ✅ این بخش مهم‌ترین قسمت اصلاح شده است
-      - name: Accept Android Licenses + Install SDK Tools
-        run: |
-          yes | sdkmanager --licenses || true
-          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
       - name: Build APK
         run: buildozer android debug
