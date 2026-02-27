@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install system dependencies
         run: |
@@ -23,19 +23,16 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython==0.29.36
 
-      - name: Accept Android licenses
-        run: yes | sdkmanager --licenses || true
-
       - name: Build Debug APK
         run: |
           buildozer -v android debug
 
-      - name: Build Release AAB
+      - name: Build Release
         run: |
           buildozer -v android release
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: android-build
           path: bin/*
