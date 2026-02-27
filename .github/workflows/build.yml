@@ -14,10 +14,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # ✅ استفاده از Python 3.9 (پایدار برای pyjnius)
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.9"
 
       - name: Install System Dependencies
         run: |
@@ -34,7 +35,7 @@ jobs:
             zlib1g-dev \
             libjpeg-dev
 
-      # ✅ فقط Force Java
+      # ✅ Force Java 17
       - name: Force Java 17
         run: |
           echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
@@ -48,13 +49,16 @@ jobs:
           pip install --upgrade cython
           pip install buildozer
           pip install python-bidi==0.4.2
+          pip install pyjnius==1.6.1
+          pip install arabic-reshaper
           pip install openpyxl
-          pip install kivy
+          pip install kivy==2.2.1
+          pip install plyer
 
-      # 🔥 مهم: اجازه بده buildozer خودش SDK رو دانلود کنه
-      - name: Build APK (Auto SDK)
+      # ✅ اجازه بده buildozer خودش SDK رو مدیریت کنه
+      - name: Build APK
         run: |
-          yes | buildozer android debug
+          yes | buildozer android debug --verbose
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
