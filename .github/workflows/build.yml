@@ -1,4 +1,4 @@
-name: Build APK
+name: Build Android
 
 on:
   push:
@@ -10,41 +10,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.10
-
-      - name: Install Buildozer dependencies
+      - name: Install system dependencies
         run: |
           sudo apt update
-          sudo apt install -y zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          sudo apt install -y zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev git
+
+      - name: Install Python dependencies
+        run: |
           pip install --upgrade pip
           pip install buildozer cython==0.29.36
 
-      - name: Create buildozer.spec
-        run: |
-          buildozer init
-          
-          sed -i "s/^title = .*/title = Tadil App/" buildozer.spec
-          sed -i "s/^package.name = .*/package.name = tadilapp/" buildozer.spec
-          sed -i "s/^package.domain = .*/package.domain = org.tadil/" buildozer.spec
-          sed -i "s/^source.include_exts = .*/source.include_exts = py,ttf/" buildozer.spec
-          sed -i "s/^requirements = .*/requirements = python3,kivy,arabic_reshaper,python-bidi==0.4.2,openpyxl,plyer/" buildozer.spec
-          sed -i "s/^orientation = .*/orientation = portrait/" buildozer.spec
-          sed -i "s/# android.api = .*/android.api = 33/" buildozer.spec
-          sed -i "s/# android.minapi = .*/android.minapi = 21/" buildozer.spec
-          sed -i "s/# android.arch = .*/android.archs = arm64-v8a,armeabi-v7a/" buildozer.spec
+      - name: Accept Android licenses
+        run: yes | sdkmanager --licenses || true
 
-      - name: Build APK
+      - name: Build Debug APK
         run: |
           buildozer -v android debug
 
-      - name: Upload APK
+      - name: Build Release AAB
+        run: |
+          buildozer -v android release
+
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: apk
-          path: bin/*.apk
+          name: android-build
+          path: bin/*
